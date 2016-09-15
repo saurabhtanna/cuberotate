@@ -6,8 +6,8 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <Primitives\Vertex.h>
 #include <Primitives\ShapeGenerator.h>
-#include <time.h>
 #include <QtGui\qkeyevent>
+#include <QT\QTimer.h>
 
 using namespace std;
 
@@ -47,9 +47,9 @@ void MeGlWindow::paintGL()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
-
+	rotatex += 5.0f;
 	mat4 translationMatrix = glm::translate(mat4(), vec3(0.0f, 0.0f, -3.0f));
-	mat4 rotationMatrix = glm::rotate(mat4(), rotatex, vec3(1.0f, 0.0f, 0.0f));
+	mat4 rotationMatrix = glm::rotate(mat4(), rotatex, vec3(0.0f, 1.0f, 0.0f));
 	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
 
 	mat4 fullTransformMatrix = projectionMatrix * translationMatrix * rotationMatrix;
@@ -61,6 +61,11 @@ void MeGlWindow::paintGL()
 		GL_FALSE, &fullTransformMatrix[0][0]);
 
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+
+	QTimer *timer = new QTimer(this);
+	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+	timer->setInterval(16);
+	timer->start(1000);
 	
 }
 
@@ -140,19 +145,20 @@ void installShaders()
 	glUseProgram(programID);
 }
 
-void MeGlWindow::keyPressEvent(QKeyEvent* e)
+//void MeGlWindow::keyPressEvent(QKeyEvent* e)
+/*void MeGlWindow::newFrame()
 {
 	{
-		switch (e->key())
+		//switch (e->key())
 		{
-		case Qt::Key::Key_W:
+		//case Qt::Key::Key_W:
 			rotatex += 1.0f;
-			break;
+			//break;
 		}
 		installShaders();
 		repaint();
 	}
-}
+}*/
 
 void MeGlWindow::initializeGL()
 {
