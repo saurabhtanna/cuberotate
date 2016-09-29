@@ -4,10 +4,12 @@
 #include <MeGlWindow.h>
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
+#include <QtGui\qmouseevent>
 #include <Primitives\Vertex.h>
 #include <Primitives\ShapeGenerator.h>
 #include <QtGui\qkeyevent>
 #include <QT\QTimer.h>
+#include "Camera.h"
 
 using namespace std;
 
@@ -21,6 +23,7 @@ const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
 GLuint numIndices;
+Camera camera;
 
 void sendDataToOpenGL()
 {
@@ -52,7 +55,7 @@ void MeGlWindow::paintGL()
 	mat4 rotationMatrix = glm::rotate(mat4(), rotatex, vec3(0.0f, 1.0f, 0.0f));
 	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
 
-	mat4 fullTransformMatrix = projectionMatrix * translationMatrix * rotationMatrix;
+	mat4 fullTransformMatrix = projectionMatrix * camera.getWorldToViewMatrix() * translationMatrix * rotationMatrix;
 
 	GLint fullTransformMatrixUniformLocation =
 		glGetUniformLocation(programID, "fullTransformMatrix");
@@ -65,8 +68,40 @@ void MeGlWindow::paintGL()
 	QTimer *timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
 	timer->setInterval(16);
-	timer->start(1000);
+	timer->start(100);
 	
+}
+
+void MeGlWindow::mouseMoveEvent(QMouseEvent* e)
+{
+	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
+
+}
+
+void MeGlWindow::keyPressEvent(QKeyEvent* e)
+{
+	switch (e->key())
+	{
+	case Qt::Key::Key_W:
+		camera.moveForward();
+		break;
+	case Qt::Key::Key_S:
+		camera.moveBackward();
+		break;
+	case Qt::Key::Key_A:
+		camera.moveLeft();
+		break;
+	case Qt::Key::Key_D:
+		camera.moveRight();
+		break;
+	case Qt::Key::Key_R:
+		camera.moveUp();
+		break;
+	case Qt::Key::Key_F:
+		camera.moveDown();
+		break;
+	}
+	repaint();
 }
 
 bool checkStatus(
